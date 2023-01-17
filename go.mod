@@ -1,4 +1,4 @@
-module terratest-ext
+module github.com/matt-FFFFFF/terratest-ext
 
 go 1.19
 
