@@ -36,3 +36,15 @@ func TestHasValueStringsNotEqual(t *testing.T) {
 		InPlan(plan).That("local_file.test").Key("content").HasValue("test2"),
 	)
 }
+
+func TestHasValueStringsToInt(t *testing.T) {
+	t.Parallel()
+
+	opts := tfutils.GetDefaultTerraformOptions(t, basicTestData)
+	plan, err := terraform.InitAndPlanAndShowWithStructE(t, opts)
+	require.NoError(t, err)
+	assert.Error(
+		t,
+		InPlan(plan).That("local_file.test_int").Key("content").HasValue(123),
+	)
+}

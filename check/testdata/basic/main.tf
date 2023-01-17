@@ -11,3 +11,8 @@ resource "local_file" "test" {
   content  = "test"
   filename = "test.txt"
 }
+
+resource "local_file" "test_int" {
+  content  = 123
+  filename = "test.txt"
+}
