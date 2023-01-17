@@ -30,6 +30,16 @@ func (p PlanType) That(resourceName string) ThatType {
 	}
 }
 
+func (t ThatType) Exists() error {
+	if _, ok := t.Plan.ResourcePlannedValuesMap[t.ResourceName]; !ok {
+		return fmt.Errorf(
+			"%s: resource not found in plan",
+			t.ResourceName,
+		)
+	}
+	return nil
+}
+
 func (t ThatType) Key(key string) ThatTypeWithKey {
 	return ThatTypeWithKey{
 		Plan:         t.Plan,
@@ -45,21 +55,11 @@ type ThatTypeWithKey struct {
 }
 
 func (twk ThatTypeWithKey) HasValue(expected interface{}) error {
-	if _, ok := twk.Plan.ResourcePlannedValuesMap[twk.ResourceName]; !ok {
-		return fmt.Errorf(
-			"%s: resource not found in plan",
-			twk.ResourceName,
-		)
+	if err := twk.Exists(); err != nil {
+		return err
 	}
 
 	resource := twk.Plan.ResourcePlannedValuesMap[twk.ResourceName]
-	if _, ok := resource.AttributeValues[twk.Key]; !ok {
-		return fmt.Errorf(
-			"%s: key %s not found in resource",
-			twk.ResourceName,
-			twk.Key,
-		)
-	}
 	actual := resource.AttributeValues[twk.Key]
 
 	if err := validateEqualArgs(expected, actual); err != nil {
@@ -70,7 +70,7 @@ func (twk ThatTypeWithKey) HasValue(expected interface{}) error {
 		)
 	}
 
-	if !assert.ObjectsAreEqual(actual, expected) {
+	if !assert.ObjectsAreEqualValues(actual, expected) {
 		return fmt.Errorf(
 			"%s: attribute %s, planned value %s not equal to assertion %s",
 			twk.ResourceName,
@@ -82,8 +82,42 @@ func (twk ThatTypeWithKey) HasValue(expected interface{}) error {
 	return nil
 }
 
+func (twk ThatTypeWithKey) Exists() error {
+	if err := InPlan(twk.Plan).That(twk.ResourceName).Exists(); err != nil {
+		return err
+	}
+
+	resource := twk.Plan.ResourcePlannedValuesMap[twk.ResourceName]
+	if _, exists := resource.AttributeValues[twk.Key]; !exists {
+		return fmt.Errorf(
+			"%s: key %s not found in resource",
+			twk.ResourceName,
+			twk.Key,
+		)
+	}
+
+	return nil
+}
+
+func (twk ThatTypeWithKey) DoesNotExist() error {
+	if err := InPlan(twk.Plan).That(twk.ResourceName).Exists(); err != nil {
+		return err
+	}
+
+	resource := twk.Plan.ResourcePlannedValuesMap[twk.ResourceName]
+	if _, exists := resource.AttributeValues[twk.Key]; exists {
+		return fmt.Errorf(
+			"%s: key %s found in resource",
+			twk.ResourceName,
+			twk.Key,
+		)
+	}
+
+	return nil
+}
+
 // validateEqualArgs checks whether provided arguments can be safely used in the
-// Equal/NotEqual functions.
+// HasValue/NotEqual functions.
 func validateEqualArgs(expected, actual interface{}) error {
 	if expected == nil && actual == nil {
 		return nil
