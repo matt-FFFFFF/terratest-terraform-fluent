@@ -2,71 +2,102 @@ package check
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 )
 
+func InPlan(plan *terraform.PlanStruct) PlanType {
+	return PlanType{
+		Plan: plan,
+	}
+}
+
+type PlanType struct {
+	Plan *terraform.PlanStruct
+}
+
 type ThatType struct {
+	Plan         *terraform.PlanStruct
 	ResourceName string
 }
 
-func That(resourceName string) ThatType {
+func (p PlanType) That(resourceName string) ThatType {
 	return ThatType{
+		Plan:         p.Plan,
 		ResourceName: resourceName,
 	}
 }
 
 func (t ThatType) Key(key string) ThatTypeWithKey {
 	return ThatTypeWithKey{
+		Plan:         t.Plan,
 		ResourceName: t.ResourceName,
 		Key:          key,
 	}
 }
 
 type ThatTypeWithKey struct {
+	Plan         *terraform.PlanStruct
 	ResourceName string
 	Key          string
 }
 
-func (twk ThatTypeWithKey) HasValue(value string) ThatTypeWithKeyAndValue {
-	return ThatTypeWithKeyAndValue{
-		ResourceName: twk.ResourceName,
-		Key:          twk.Key,
-		Value:        value,
-	}
-
-}
-
-type ThatTypeWithKeyAndValue struct {
-	ResourceName string
-	Key          string
-	Value        string
-}
-
-func (twkav ThatTypeWithKeyAndValue) InPlan(plan terraform.PlanStruct) error {
-	if _, ok := plan.ResourcePlannedValuesMap[twkav.ResourceName]; !ok {
+func (twk ThatTypeWithKey) HasValue(expected interface{}) error {
+	if _, ok := twk.Plan.ResourcePlannedValuesMap[twk.ResourceName]; !ok {
 		return fmt.Errorf(
 			"%s: resource not found in plan",
-			twkav.ResourceName,
+			twk.ResourceName,
 		)
 	}
-	resource := plan.ResourcePlannedValuesMap[twkav.ResourceName]
-	if _, ok := resource.AttributeValues[twkav.Key]; !ok {
+
+	resource := twk.Plan.ResourcePlannedValuesMap[twk.ResourceName]
+	if _, ok := resource.AttributeValues[twk.Key]; !ok {
 		return fmt.Errorf(
 			"%s: key %s not found in resource",
-			twkav.ResourceName,
-			twkav.Key,
+			twk.ResourceName,
+			twk.Key,
 		)
 	}
-	attrValue := resource.AttributeValues[twkav.Key]
-	if assert.ObjectsAreEqual(resource.AttributeValues[twkav.Key], twkav.Value) {
+	actual := resource.AttributeValues[twk.Key]
+
+	if err := validateEqualArgs(expected, actual); err != nil {
+		return fmt.Errorf("invalid operation: %#v == %#v (%s)",
+			expected,
+			actual,
+			err,
+		)
+	}
+
+	if !assert.ObjectsAreEqual(actual, expected) {
 		return fmt.Errorf(
 			"%s: attribute %s, planned value %s not equal to assertion %s",
-			twkav.ResourceName,
-			twkav.Key,
-			attrValue,
-			twkav.Value)
+			twk.ResourceName,
+			twk.Key,
+			actual,
+			expected,
+		)
 	}
 	return nil
+}
+
+// validateEqualArgs checks whether provided arguments can be safely used in the
+// Equal/NotEqual functions.
+func validateEqualArgs(expected, actual interface{}) error {
+	if expected == nil && actual == nil {
+		return nil
+	}
+
+	if isFunction(expected) || isFunction(actual) {
+		return fmt.Errorf("cannot take func type as argument")
+	}
+	return nil
+}
+
+func isFunction(arg interface{}) bool {
+	if arg == nil {
+		return false
+	}
+	return reflect.TypeOf(arg).Kind() == reflect.Func
 }
