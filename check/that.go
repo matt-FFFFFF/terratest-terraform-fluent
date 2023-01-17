@@ -8,21 +8,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func InPlan(plan *terraform.PlanStruct) PlanType {
-	return PlanType{
-		Plan: plan,
-	}
-}
-
-type PlanType struct {
-	Plan *terraform.PlanStruct
-}
-
+// ThatType is a type which can be used for more fluent assertions for a given Resource
 type ThatType struct {
 	Plan         *terraform.PlanStruct
 	ResourceName string
 }
 
+// That returns a type which can be used for more fluent assertions for a given Resource
 func (p PlanType) That(resourceName string) ThatType {
 	return ThatType{
 		Plan:         p.Plan,
@@ -30,6 +22,7 @@ func (p PlanType) That(resourceName string) ThatType {
 	}
 }
 
+// Exists returns an error if the resource does not exist in the plan
 func (t ThatType) Exists() error {
 	if _, ok := t.Plan.ResourcePlannedValuesMap[t.ResourceName]; !ok {
 		return fmt.Errorf(
@@ -40,6 +33,7 @@ func (t ThatType) Exists() error {
 	return nil
 }
 
+// Key returns a type which can be used for more fluent assertions for a given Resource & Key combination
 func (t ThatType) Key(key string) ThatTypeWithKey {
 	return ThatTypeWithKey{
 		Plan:         t.Plan,
@@ -48,12 +42,15 @@ func (t ThatType) Key(key string) ThatTypeWithKey {
 	}
 }
 
+// ThatTypeWithKey is a type which can be used for more fluent assertions for a given Resource & Key combination
 type ThatTypeWithKey struct {
 	Plan         *terraform.PlanStruct
 	ResourceName string
 	Key          string
 }
 
+// HasValue returns an error if the resource does not exist in the plan or if the value of the key does not match the
+// expected value
 func (twk ThatTypeWithKey) HasValue(expected interface{}) error {
 	if err := twk.Exists(); err != nil {
 		return err
@@ -82,6 +79,7 @@ func (twk ThatTypeWithKey) HasValue(expected interface{}) error {
 	return nil
 }
 
+// Exists returns an error if the resource does not exist in the plan or if the key does not exist in the resource
 func (twk ThatTypeWithKey) Exists() error {
 	if err := InPlan(twk.Plan).That(twk.ResourceName).Exists(); err != nil {
 		return err
@@ -95,10 +93,10 @@ func (twk ThatTypeWithKey) Exists() error {
 			twk.Key,
 		)
 	}
-
 	return nil
 }
 
+// DoesNotExist returns an error if the resource does not exist in the plan or if the key exists in the resource
 func (twk ThatTypeWithKey) DoesNotExist() error {
 	if err := InPlan(twk.Plan).That(twk.ResourceName).Exists(); err != nil {
 		return err
@@ -112,12 +110,11 @@ func (twk ThatTypeWithKey) DoesNotExist() error {
 			twk.Key,
 		)
 	}
-
 	return nil
 }
 
 // validateEqualArgs checks whether provided arguments can be safely used in the
-// HasValue/NotEqual functions.
+// HasValue function.
 func validateEqualArgs(expected, actual interface{}) error {
 	if expected == nil && actual == nil {
 		return nil

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/matt-FFFFFF/terratest-ext/tfutils"
+	"github.com/matt-FFFFFF/terratest-terraform-fluent/tfutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

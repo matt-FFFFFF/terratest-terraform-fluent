@@ -1,4 +1,4 @@
-module github.com/matt-FFFFFF/terratest-ext
+module github.com/matt-FFFFFF/terratest-terraform-fluent
 
 go 1.19
 
