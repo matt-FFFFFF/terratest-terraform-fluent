@@ -22,7 +22,7 @@ func getDefaultTerraformOptions(t *testing.T, dir string) *terraform.Options {
 		Logger:       logger.TestingT,
 		PlanFilePath: "tfplan",
 		TerraformDir: dir,
-		Lock:         false,
+		Lock:         true,
 
 		Vars: make(map[string]interface{}),
 	}

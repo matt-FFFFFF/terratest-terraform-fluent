@@ -10,22 +10,19 @@ package test
 import (
   "testing"
 
+  "github.com/matt-FFFFFF/terratest-terraform-fluent/check"
+  "github.com/matt-FFFFFF/terratest-terraform-fluent/setuptest"
   "github.com/stretchr/testify/assert"
   "github.com/stretchr/testify/require"
-
-  "github.com/matt-FFFFFF/terratest-terraform-fluent/check"
-  "github.com/matt-FFFFFF/terratest-terraform-fluent/tfutils"
-  "github.com/gruntwork-io/terratest/modules/terraform"
 )
 
 func TestSomeTerraform( t *testing.T) {
   // Set up the Terraform options and run terraform init and plan,
   // saving the plan output to a variable.
   // The directory should be relative to the running test.
-  opts := tfutils.GetDefaultTerraformOptions(t, "testdata/my-directory")
-  plan, err := terraform.InitAndPlanAndShowWithStructE(t, terraformOptions)
-  require.NoError(t, err)
-
+  tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitAndPlanAndShowWithStruct(t)
+  require.NoError(t, tftest.Err)
+  defer tftest.Cleanup()
   // Check that the plan contains the expected number of resources.
   assert.NoError(
     t,
