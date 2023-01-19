@@ -55,14 +55,14 @@ func CopyTerraformFolderToTempAndCleanUp(t *testing.T, moduleDir string, testDir
 	}
 	list := strings.Split(relPath, string(os.PathSeparator))
 	depth := len(list)
-	if len(list) > 1 {
+	if len(list) > 1 || list[0] != "." {
 		depth++
 	}
 	dir := tmp
+	for i := 0; i < depth; i++ {
+		dir = filepath.Dir(dir)
+	}
 	f := func() {
-		for i := 0; i < depth; i++ {
-			dir = filepath.Dir(dir)
-		}
 		removeTestDir(t, dir)
 	}
 	return tmp, f, nil
@@ -72,6 +72,6 @@ func CopyTerraformFolderToTempAndCleanUp(t *testing.T, moduleDir string, testDir
 func removeTestDir(t *testing.T, dir string) {
 	err := os.RemoveAll(dir)
 	if err != nil {
-		t.Logf("Error removing test directory %s: %v", dir, err)
+		t.Logf("error removing test directory %s: %v", dir, err)
 	}
 }

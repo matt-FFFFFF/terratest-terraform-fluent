@@ -72,3 +72,15 @@ func TestKeyNotExists(t *testing.T) {
 		InPlan(tftest.Plan).That("local_file.test").Key("not_exists").DoesNotExist(),
 	)
 }
+
+func TestInSubdir(t *testing.T) {
+	t.Parallel()
+
+	tftest := setuptest.Dirs("testdata/test-in-subdir", "subdir").WithVars(nil).InitAndPlanAndShowWithStruct(t)
+	require.NoError(t, tftest.Err)
+	defer tftest.Cleanup()
+	assert.NoError(
+		t,
+		InPlan(tftest.Plan).That("module.test.local_file.test").Key("content").HasValue("test"),
+	)
+}

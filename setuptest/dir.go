@@ -39,6 +39,7 @@ type DirType struct {
 func (d DirType) WithVars(vars map[string]interface{}) DirTypeWithVars {
 	return DirTypeWithVars{
 		RootDir: d.RootDir,
+		TestDir: d.TestDir,
 		Vars:    vars,
 	}
 }
@@ -47,6 +48,7 @@ func (d DirType) WithVars(vars map[string]interface{}) DirTypeWithVars {
 func (d DirType) WithVarFiles(varfiles []string) DirTypeWithVarFiles {
 	return DirTypeWithVarFiles{
 		RootDir:  d.RootDir,
+		TestDir:  d.TestDir,
 		VarFiles: varfiles,
 	}
 }
