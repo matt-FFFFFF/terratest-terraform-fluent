@@ -21,9 +21,11 @@ const(
 )
 
 func TestSomeTerraform( t *testing.T) {
-  // Set up the Terraform options and run terraform init, plan and show,
+  // Set up the Terraform test and run terraform init, plan and show,
   // saving the plan output to a struct.
-  // The directory should be relative to the running test.
+  // The returned struct in tftest contains the plan struct, the clean up func and any errors.
+  //
+  // The Dirs inputs are the test root directory and the relative path test code.
   tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitAndPlanAndShowWithStruct(t)
   require.NoError(t, tftest.Err)
   defer tftest.Cleanup()
