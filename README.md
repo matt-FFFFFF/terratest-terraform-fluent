@@ -21,12 +21,13 @@ const(
 )
 
 func TestSomeTerraform( t *testing.T) {
-  // Set up the Terraform options and run terraform init and plan,
-  // saving the plan output to a variable.
+  // Set up the Terraform options and run terraform init, plan and show,
+  // saving the plan output to a struct.
   // The directory should be relative to the running test.
   tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitAndPlanAndShowWithStruct(t)
   require.NoError(t, tftest.Err)
   defer tftest.Cleanup()
+
   // Check that the plan contains the expected number of resources.
   assert.NoError(
     t,
