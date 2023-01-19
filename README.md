@@ -16,6 +16,10 @@ import (
   "github.com/stretchr/testify/require"
 )
 
+const(
+  basicTestData = "testdata/basic"
+)
+
 func TestSomeTerraform( t *testing.T) {
   // Set up the Terraform options and run terraform init and plan,
   // saving the plan output to a variable.
