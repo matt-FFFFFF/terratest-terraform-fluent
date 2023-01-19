@@ -51,7 +51,7 @@ type ThatTypeWithKey struct {
 
 // HasValue returns an error if the resource does not exist in the plan or if the value of the key does not match the
 // expected value
-func (twk ThatTypeWithKey) HasValue(expected interface{}) error {
+func (twk ThatTypeWithKey) HasValue(expected interface{}) *CheckError {
 	if err := twk.Exists(); err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (twk ThatTypeWithKey) HasValue(expected interface{}) error {
 	actual := resource.AttributeValues[twk.Key]
 
 	if err := validateEqualArgs(expected, actual); err != nil {
-		return fmt.Errorf("invalid operation: %#v == %#v (%s)",
+		return newCheckErrorf("invalid operation: %#v == %#v (%s)",
 			expected,
 			actual,
 			err,
@@ -68,7 +68,7 @@ func (twk ThatTypeWithKey) HasValue(expected interface{}) error {
 	}
 
 	if !assert.ObjectsAreEqualValues(actual, expected) {
-		return fmt.Errorf(
+		return newCheckErrorf(
 			"%s: attribute %s, planned value %s not equal to assertion %s",
 			twk.ResourceName,
 			twk.Key,
@@ -80,14 +80,14 @@ func (twk ThatTypeWithKey) HasValue(expected interface{}) error {
 }
 
 // Exists returns an error if the resource does not exist in the plan or if the key does not exist in the resource
-func (twk ThatTypeWithKey) Exists() error {
+func (twk ThatTypeWithKey) Exists() *CheckError {
 	if err := InPlan(twk.Plan).That(twk.ResourceName).Exists(); err != nil {
-		return err
+		return newCheckError(err.Error())
 	}
 
 	resource := twk.Plan.ResourcePlannedValuesMap[twk.ResourceName]
 	if _, exists := resource.AttributeValues[twk.Key]; !exists {
-		return fmt.Errorf(
+		return newCheckErrorf(
 			"%s: key %s not found in resource",
 			twk.ResourceName,
 			twk.Key,
@@ -97,14 +97,14 @@ func (twk ThatTypeWithKey) Exists() error {
 }
 
 // DoesNotExist returns an error if the resource does not exist in the plan or if the key exists in the resource
-func (twk ThatTypeWithKey) DoesNotExist() error {
+func (twk ThatTypeWithKey) DoesNotExist() *CheckError {
 	if err := InPlan(twk.Plan).That(twk.ResourceName).Exists(); err != nil {
-		return err
+		return newCheckError(err.Error())
 	}
 
 	resource := twk.Plan.ResourcePlannedValuesMap[twk.ResourceName]
 	if _, exists := resource.AttributeValues[twk.Key]; exists {
-		return fmt.Errorf(
+		return newCheckErrorf(
 			"%s: key %s found in resource",
 			twk.ResourceName,
 			twk.Key,

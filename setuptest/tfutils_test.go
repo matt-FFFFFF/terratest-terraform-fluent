@@ -7,6 +7,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestCopyFilesToTempAndCleanupDepth1 tests that the parent of the temp directory
+// is cleaned up after the cleanup function is called.
+//
+// The terraform.CopyTerraformFolderToTemp function creates a temporary directory in the os.TempDir
+// called t.Name(){RANDOMNUMBERS}/{moduleDir}/{testDir}
+// Therefore we need to make sure the parent of {moduledir} is cleaned up.
 func TestCopyFilesToTempAndCleanupDepth1(t *testing.T) {
 	t.Parallel()
 

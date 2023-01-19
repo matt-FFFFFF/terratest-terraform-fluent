@@ -18,10 +18,7 @@ func TestHasValueStrings(t *testing.T) {
 	tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitAndPlanAndShowWithStruct(t)
 	require.NoError(t, tftest.Err)
 	defer tftest.Cleanup()
-	assert.NoError(
-		t,
-		InPlan(tftest.Plan).That("local_file.test").Key("content").HasValue("test"),
-	)
+	InPlan(tftest.Plan).That("local_file.test").Key("content").HasValue("test").IfNotFail(t)
 }
 
 func TestHasValueStringsNotEqualError(t *testing.T) {
@@ -67,10 +64,7 @@ func TestKeyNotExists(t *testing.T) {
 	tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitAndPlanAndShowWithStruct(t)
 	defer tftest.Cleanup()
 	require.NoError(t, tftest.Err)
-	assert.NoError(
-		t,
-		InPlan(tftest.Plan).That("local_file.test").Key("not_exists").DoesNotExist(),
-	)
+	InPlan(tftest.Plan).That("local_file.test").Key("not_exists").DoesNotExist().IfNotFail(t)
 }
 
 func TestInSubdir(t *testing.T) {
@@ -79,8 +73,5 @@ func TestInSubdir(t *testing.T) {
 	tftest := setuptest.Dirs("testdata/test-in-subdir", "subdir").WithVars(nil).InitAndPlanAndShowWithStruct(t)
 	require.NoError(t, tftest.Err)
 	defer tftest.Cleanup()
-	assert.NoError(
-		t,
-		InPlan(tftest.Plan).That("module.test.local_file.test").Key("content").HasValue("test"),
-	)
+	InPlan(tftest.Plan).That("module.test.local_file.test").Key("content").HasValue("test").IfNotFail(t)
 }
