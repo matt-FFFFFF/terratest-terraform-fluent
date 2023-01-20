@@ -25,22 +25,19 @@ func TestSomeTerraform( t *testing.T) {
   // saving the plan output to a struct.
   // The returned struct in tftest contains the plan struct, the clean up func and any errors.
   //
-  // The Dirs inputs are the test root directory and the relative path test code.
+  // The Dirs inputs are the test root directory and the relative path to the test code.
+  // (this must be a subdirectory of the test root directory)
+  // The WithVars inputs are the Terraform variables to pass to the test.
+  // The InitAndPlanAndShowWithStruct inputs are the testint.T value
   tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitAndPlanAndShowWithStruct(t)
   require.NoError(t, tftest.Err)
   defer tftest.Cleanup()
 
   // Check that the plan contains the expected number of resources.
-  assert.NoError(
-    t,
-    check.InPlan(plan).NumberOfResourcesEquals(1)
-  )
+  check.InPlan(plan).NumberOfResourcesEquals(1).IfNotFail(t)
 
   // Check that the plan contains the expected resource, with an attribute called `my_attribute` and
   // a corresponding value of `my_value`.
-  assert.NoError(
-    t,
-    check.InPlan(plan).That("my_terraform_resource.name").Key("my_attribute").HasValue("my_value"),
-  )
+  check.InPlan(plan).That("my_terraform_resource.name").Key("my_attribute").HasValue("my_value").IfNotFail(t)
 }
 ```
