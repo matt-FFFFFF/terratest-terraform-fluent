@@ -23,9 +23,7 @@ func TestNewCheckErrorNill(t *testing.T) {
 	ce := func() *CheckError {
 		return nil
 	}()
-	if ce != nil {
-		t.Fatalf("expected nil, got %v", ce)
-	}
+	assert.Nil(t, ce)
 }
 
 func TestCheckErrorContains(t *testing.T) {
