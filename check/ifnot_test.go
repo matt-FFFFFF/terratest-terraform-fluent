@@ -33,7 +33,7 @@ func TestCheckErrorContains(t *testing.T) {
 
 func TestCheckErrorNotContains(t *testing.T) {
 	ce := newCheckError("test error")
-	ce.ErrorContains(t, "notcontained")
+	ce.ErrorNotContains(t, "notcontained")
 }
 
 func TestCheckErrorIfNotFailWithNil(t *testing.T) {

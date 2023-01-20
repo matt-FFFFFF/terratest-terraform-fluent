@@ -59,3 +59,5 @@ terraform.rc
 
 # Ignore lock giles
 .terraform.lock.hcl
+
+dist/
