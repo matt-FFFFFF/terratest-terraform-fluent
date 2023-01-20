@@ -49,7 +49,7 @@ type ThatTypeWithKey struct {
 	Key          string
 }
 
-// HasValue returns an error if the resource does not exist in the plan or if the value of the key does not match the
+// HasValue returns a CheckError if the resource does not exist in the plan or if the value of the key does not match the
 // expected value
 func (twk ThatTypeWithKey) HasValue(expected interface{}) *CheckError {
 	if err := twk.Exists(); err != nil {
@@ -79,7 +79,7 @@ func (twk ThatTypeWithKey) HasValue(expected interface{}) *CheckError {
 	return nil
 }
 
-// Exists returns an error if the resource does not exist in the plan or if the key does not exist in the resource
+// Exists returns a CheckError if the resource does not exist in the plan or if the key does not exist in the resource
 func (twk ThatTypeWithKey) Exists() *CheckError {
 	if err := InPlan(twk.Plan).That(twk.ResourceName).Exists(); err != nil {
 		return newCheckError(err.Error())
@@ -96,7 +96,7 @@ func (twk ThatTypeWithKey) Exists() *CheckError {
 	return nil
 }
 
-// DoesNotExist returns an error if the resource does not exist in the plan or if the key exists in the resource
+// DoesNotExist returns a CheckError if the resource does not exist in the plan or if the key exists in the resource
 func (twk ThatTypeWithKey) DoesNotExist() *CheckError {
 	if err := InPlan(twk.Plan).That(twk.ResourceName).Exists(); err != nil {
 		return newCheckError(err.Error())

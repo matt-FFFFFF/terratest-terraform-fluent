@@ -40,3 +40,12 @@ func TestCheckErrorIfNotFailWithNil(t *testing.T) {
 	var ce *CheckError = nil
 	ce.IfNotFail(t)
 }
+
+func TestCheckErrorAsError(t *testing.T) {
+	var ce *CheckError
+	assert.Nil(t, ce)
+	assert.NoError(
+		t,
+		ce.AsError(),
+	)
+}
