@@ -1,9 +1,9 @@
 TESTTIMEOUT=5m
-TEST?=$$(go list ./... |grep -v 'vendor')
+TEST?=$$(go list ./... | grep -v 'vendor')
 
 fmt:
 	@echo "==> Fixing source code with gofmt..."
-	find ./tests -name '*.go' | grep -v vendor | xargs gofmt -s -w
+	find -name '*.go' | grep -v vendor | xargs gofmt -s -w
 
 test: fmt
 	go test $(TEST) $(TESTARGS) -run ^Test$(TESTFILTER) -timeout=$(TESTTIMEOUT)
