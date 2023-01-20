@@ -1,8 +1,6 @@
 package check
 
 import (
-	"fmt"
-
 	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
@@ -16,10 +14,10 @@ type PlanType struct {
 	Plan *terraform.PlanStruct
 }
 
-func (p PlanType) NumberOfResourcesEquals(expected int) error {
+func (p PlanType) NumberOfResourcesEquals(expected int) *CheckError {
 	actual := len(p.Plan.ResourcePlannedValuesMap)
 	if actual != expected {
-		return fmt.Errorf("expected %d resources, got %d", expected, actual)
+		return newCheckErrorf("expected %d resources, got %d", expected, actual)
 	}
 	return nil
 }
