@@ -38,8 +38,7 @@ release:
     name: terratest-terraform-fluent
     owner: matt-FFFFFF
   header: |
-    # Changelog {{ .Tag }}
-
+    # terratest-terraform-fluent {{ .Tag }}
 milestones:
   - close: true
 
