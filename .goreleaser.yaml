@@ -5,7 +5,6 @@ before:
     # You may remove this if you don't use go modules.
     - go mod tidy
     - go mod vendor
-
 archives:
   - format: tar.gz
     # this name template makes the OS and Arch compatible with the results of uname.
@@ -30,6 +29,15 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+release:
+  github:
+    name: terratest-terraform-fluent
+    owner: matt-FFFFFF
+  header: |
+    # Changelog {{ .Tag }}
+
+milestones:
+  - close: true
 
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
