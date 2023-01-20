@@ -5,7 +5,7 @@ fmt:
 	@echo "==> Fixing source code with gofmt..."
 	find -name '*.go' | grep -v vendor | xargs gofmt -s -w
 
-test: fmt
+test:
 	go test $(TEST) $(TESTARGS) -run ^Test$(TESTFILTER) -timeout=$(TESTTIMEOUT)
 
 # Create a test coverage report and launch a browser to view it
