@@ -23,4 +23,4 @@ testcoverfile:
 	go test -coverprofile=coverage.out -covermode=count
 	go tool cover -html=coverage.out -o=coverage.html
 
-.PHONY: fmt testcover testcoverfile
+.PHONY: fmt test testcover testcoverfile
