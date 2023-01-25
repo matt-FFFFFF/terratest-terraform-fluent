@@ -23,27 +23,28 @@ var FastRetry = Retry{
 	Wait: 20 * time.Second,
 }
 
-var LongRetry = Retry{
+var SlowRetry = Retry{
 	Max:  20,
 	Wait: 1 * time.Minute,
 }
 
-func (resp SetupTestResponse) Apply(t *testing.T) error {
+func (resp Response) Apply(t *testing.T) error {
 	_, err := terraform.ApplyE(t, resp.Options)
 	return err
 }
 
-func (resp SetupTestResponse) ApplyIdempotent(t *testing.T) error {
+func (resp Response) ApplyIdempotent(t *testing.T) error {
 	_, err := terraform.ApplyAndIdempotentE(t, resp.Options)
 	return err
 }
 
-func (resp SetupTestResponse) Destroy(t *testing.T) error {
+func (resp Response) Destroy(t *testing.T) error {
 	_, err := terraform.DestroyE(t, resp.Options)
 	return err
 }
 
-func (resp SetupTestResponse) DestroyWithRetry(t *testing.T, r Retry) {
+// DestroyWithRetry will retry the terraform destroy command up to the specified number of times.
+func (resp Response) DestroyWithRetry(t *testing.T, r Retry) error {
 	if try.MaxRetries < r.Max {
 		try.MaxRetries = r.Max
 	}
@@ -57,5 +58,7 @@ func (resp SetupTestResponse) DestroyWithRetry(t *testing.T, r Retry) {
 	})
 	if err != nil {
 		t.Logf("terraform destroy failed after %d attempts: %v", r.Max, err)
+		return err
 	}
+	return nil
 }

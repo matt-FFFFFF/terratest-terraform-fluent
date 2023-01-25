@@ -43,8 +43,8 @@ func getDefaultTerraformOptions(t *testing.T, dir string) *terraform.Options {
 //
 // The function will return the temporary directory to use with the terraform options struct, as well as
 // a function that can be used with defer to clean up afterwards.
-func CopyTerraformFolderToTempAndCleanUp(t *testing.T, moduleDir string, testDir string) SetupTestResponse {
-	var resp SetupTestResponse
+func CopyTerraformFolderToTempAndCleanUp(t *testing.T, moduleDir string, testDir string) Response {
+	var resp Response
 	tmp := test_structure.CopyTerraformFolderToTemp(t, moduleDir, testDir)
 	// We normalise, then work out the depth of the test directory relative
 	// to the test so we know how many/ directories to go up to get to the root.

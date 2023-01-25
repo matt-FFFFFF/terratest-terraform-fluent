@@ -18,7 +18,7 @@ func TestDirs(t *testing.T) {
 func TestDirsWithFunc(t *testing.T) {
 	t.Parallel()
 
-	var f SetupTestPrepFunc = func(resp SetupTestResponse) error {
+	var f PrepFunc = func(resp Response) error {
 		f, err := os.Create(filepath.Join(resp.TmpDir, "test.txt"))
 		if err != nil {
 			return err
