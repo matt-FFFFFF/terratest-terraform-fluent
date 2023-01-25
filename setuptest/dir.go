@@ -30,6 +30,7 @@ type SetupTestPrepFunc func(SetupTestResponse) error
 type SetupTestResponse struct {
 	TmpDir  string
 	Plan    *terraform.PlanStruct
+	Options *terraform.Options
 	Cleanup func()
 	Err     error
 }
@@ -143,6 +144,7 @@ func (dtv DirTypeWithVars) InitPlanShowWithPrepFunc(t *testing.T, f SetupTestPre
 	opts.Vars = dtv.Vars
 	plan, err := terraform.InitAndPlanAndShowWithStructE(t, opts)
 
+	resp.Options = opts
 	resp.Plan = plan
 	resp.Err = err
 	return resp
