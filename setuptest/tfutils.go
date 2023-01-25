@@ -30,7 +30,7 @@ func getDefaultTerraformOptions(t *testing.T, dir string) *terraform.Options {
 }
 
 // CopyTerraformFolderToTempAndCleanUp sets up a temporary copy of the supplied module folder
-// It will return the temporary directory path and a function that can be used to clean up the temporary directory
+// It will return a SetupTestResponse struct which contains the temporary directory, a cleanup function and an error.
 //
 // The testdir input is the relative path to the test directory, it can be blank if testing the module directly with variables
 // or it can be a relative path to the module directory if testing the module using a subdirectory.
@@ -43,15 +43,19 @@ func getDefaultTerraformOptions(t *testing.T, dir string) *terraform.Options {
 //
 // The function will return the temporary directory to use with the terraform options struct, as well as
 // a function that can be used with defer to clean up afterwards.
-func CopyTerraformFolderToTempAndCleanUp(t *testing.T, moduleDir string, testDir string) (string, func(), error) {
+func CopyTerraformFolderToTempAndCleanUp(t *testing.T, moduleDir string, testDir string) SetupTestResponse {
+	var resp SetupTestResponse
 	tmp := test_structure.CopyTerraformFolderToTemp(t, moduleDir, testDir)
 	// We normalise, then work out the depth of the test directory relative
 	// to the test so we know how many/ directories to go up to get to the root.
 	// We can then delete the right directory when cleaning up.
+	resp.TmpDir = tmp
+
 	absTestPath := filepath.Join(moduleDir, testDir)
 	relPath, err := filepath.Rel(moduleDir, absTestPath)
 	if err != nil {
-		return "", nil, fmt.Errorf("could not get relative path to test directory: %v", err)
+		resp.Err = fmt.Errorf("could not get relative path to test directory: %v", err)
+		return resp
 	}
 	list := strings.Split(relPath, string(os.PathSeparator))
 	depth := len(list)
@@ -62,10 +66,12 @@ func CopyTerraformFolderToTempAndCleanUp(t *testing.T, moduleDir string, testDir
 	for i := 0; i < depth; i++ {
 		dir = filepath.Dir(dir)
 	}
-	f := func() {
+
+	resp.Cleanup = func() {
 		removeTestDir(t, dir)
 	}
-	return tmp, f, nil
+
+	return resp
 }
 
 // removeTestDir removes the supplied test directory
