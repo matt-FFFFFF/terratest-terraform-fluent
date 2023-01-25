@@ -29,7 +29,7 @@ func TestSomeTerraform( t *testing.T) {
   // (this must be a subdirectory of the test root directory)
   // The WithVars inputs are the Terraform variables to pass to the test.
   // The InitAndPlanAndShowWithStruct inputs are the testint.T value
-  tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitAndPlanAndShowWithStruct(t)
+  tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
   require.NoError(t, tftest.Err)
   defer tftest.Cleanup()
 
