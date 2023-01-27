@@ -5,6 +5,8 @@ before:
     # You may remove this if you don't use go modules.
     - go mod tidy
     - go mod vendor
+    - make tools
+    - make lint
     - make test
 archives:
   - format: tar.gz
@@ -38,7 +40,7 @@ release:
     name: terratest-terraform-fluent
     owner: matt-FFFFFF
   header: |
-    # terratest-terraform-fluent {{ .Tag }}
+    # {{ .Tag }}
 milestones:
   - close: true
 

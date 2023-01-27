@@ -23,10 +23,21 @@ func (p PlanType) That(resourceName string) ThatType {
 }
 
 // Exists returns an error if the resource does not exist in the plan
-func (t ThatType) Exists() error {
+func (t ThatType) Exists() *CheckError {
 	if _, ok := t.Plan.ResourcePlannedValuesMap[t.ResourceName]; !ok {
-		return fmt.Errorf(
+		return newCheckErrorf(
 			"%s: resource not found in plan",
+			t.ResourceName,
+		)
+	}
+	return nil
+}
+
+// DoesNotExist returns an error if the resource exists in the plan
+func (t ThatType) DoesNotExist() *CheckError {
+	if _, exists := t.Plan.ResourcePlannedValuesMap[t.ResourceName]; exists {
+		return newCheckErrorf(
+			"%s: resource found in plan",
 			t.ResourceName,
 		)
 	}

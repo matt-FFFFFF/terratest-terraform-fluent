@@ -5,6 +5,9 @@ fmt:
 	@echo "==> Fixing source code with gofmt..."
 	find -name '*.go' | grep -v vendor | xargs gofmt -s -w
 
+lint:
+	golangci-lint run
+
 test:
 	go test $(TEST) $(TESTARGS) -run ^Test$(TESTFILTER) -timeout=$(TESTTIMEOUT)
 
@@ -23,4 +26,8 @@ testcoverfile:
 	go test -coverprofile=coverage.out -covermode=count
 	go tool cover -html=coverage.out -o=coverage.html
 
-.PHONY: fmt test testcover testcoverfile
+tools:
+	go install mvdan.cc/gofumpt@latest
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH || $$GOPATH)/bin v1.46.2
+
+.PHONY: fmt lint test testcover testcoverfile tools

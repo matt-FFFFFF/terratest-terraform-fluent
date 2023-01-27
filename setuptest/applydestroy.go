@@ -8,36 +8,47 @@ import (
 	"gopkg.in/matryer/try.v1"
 )
 
+// Retry is a configuration for retrying a terraform command.
 type Retry struct {
 	Max  int
 	Wait time.Duration
 }
 
+// DefaultRetry is the default retry configuration.
+// It will retry up to 5 times with a 1 minute wait between each attempt.
 var DefaultRetry = Retry{
 	Max:  5,
 	Wait: time.Minute,
 }
 
+// DefaultRetry is the faster retry configuration.
+// It will retry up to 6 times with a 20 second wait between each attempt.
 var FastRetry = Retry{
 	Max:  6,
 	Wait: 20 * time.Second,
 }
 
+// DefaultRetry is the slower retry configuration.
+// It will retry up to 20 times with a 1 minute wait between each attempt.
 var SlowRetry = Retry{
 	Max:  20,
 	Wait: 1 * time.Minute,
 }
 
+// Apply runs terraform apply for the given Response and returns the error.
 func (resp Response) Apply(t *testing.T) error {
 	_, err := terraform.ApplyE(t, resp.Options)
 	return err
 }
 
+// Apply runs terraform apply, then plan for the given Response and checks for any changes,
+// it then returns the error.
 func (resp Response) ApplyIdempotent(t *testing.T) error {
 	_, err := terraform.ApplyAndIdempotentE(t, resp.Options)
 	return err
 }
 
+// Destroy runs terraform destroy for the given Response and returns the error.
 func (resp Response) Destroy(t *testing.T) error {
 	_, err := terraform.DestroyE(t, resp.Options)
 	return err
