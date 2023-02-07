@@ -34,10 +34,10 @@ func TestSomeTerraform( t *testing.T) {
   defer tftest.Cleanup()
 
   // Check that the plan contains the expected number of resources.
-  check.InPlan(plan).NumberOfResourcesEquals(1).IfNotFail(t)
+  check.InPlan(tftest.Plan).NumberOfResourcesEquals(1).IfNotFail(t)
 
   // Check that the plan contains the expected resource, with an attribute called `my_attribute` and
   // a corresponding value of `my_value`.
-  check.InPlan(plan).That("my_terraform_resource.name").Key("my_attribute").HasValue("my_value").IfNotFail(t)
+  check.InPlan(tftest.Plan).That("my_terraform_resource.name").Key("my_attribute").HasValue("my_value").IfNotFail(t)
 }
 ```
