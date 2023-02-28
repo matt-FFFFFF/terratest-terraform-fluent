@@ -14,17 +14,17 @@ test:
 # Create a test coverage report and launch a browser to view it
 testcover:
 	@echo "==> Generating testcover.out and launching browser..."
-	if [ -f "coverage.out" ]; then rm coverage.out; fi
-	go test $(TEST) $(TESTARGS) -coverprofile=coverage.out -covermode=count
+	if [ -f "coverage.txt" ]; then rm coverage.txt; fi
+	go test $(TEST) $(TESTARGS) -timeout=$(TESTTIMEOUT) -coverprofile=coverage.txt -covermode=count
 	go tool cover -html=coverage.out
 
 # Create a test coverage report in an html file
 testcoverfile:
 	@echo "==> Generating testcover html file..."
-	if [ -f "coverage.out" ]; then rm coverage.out; fi
+	if [ -f "coverage.txt" ]; then rm coverage.txt; fi
 	if [ -f "coverage.html" ]; then rm coverage.html; fi
-	go test -coverprofile=coverage.out -covermode=count
-	go tool cover -html=coverage.out -o=coverage.html
+	go test $(TEST) $(TESTARGS) -timeout=$(TESTTIMEOUT) -coverprofile=coverage.txt -covermode=count
+	go tool cover -html=coverage.txt -o=coverage.html
 
 tools:
 	go install mvdan.cc/gofumpt@latest
