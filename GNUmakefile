@@ -15,7 +15,7 @@ test:
 testcover:
 	@echo "==> Generating testcover.out and launching browser..."
 	if [ -f "coverage.txt" ]; then rm coverage.txt; fi
-	go test $(TEST) $(TESTARGS) -coverprofile=coverage.txt -covermode=count
+	go test $(TEST) $(TESTARGS) -timeout=$(TESTTIMEOUT) -coverprofile=coverage.txt -covermode=count
 	go tool cover -html=coverage.out
 
 # Create a test coverage report in an html file
@@ -23,7 +23,7 @@ testcoverfile:
 	@echo "==> Generating testcover html file..."
 	if [ -f "coverage.txt" ]; then rm coverage.txt; fi
 	if [ -f "coverage.html" ]; then rm coverage.html; fi
-	go test -coverprofile=coverage.txt -covermode=count
+	go test $(TEST) $(TESTARGS) -timeout=$(TESTTIMEOUT) -coverprofile=coverage.txt -covermode=count
 	go tool cover -html=coverage.txt -o=coverage.html
 
 tools:
