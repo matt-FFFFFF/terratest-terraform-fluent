@@ -11,8 +11,8 @@ import (
 func TestDirs(t *testing.T) {
 	t.Parallel()
 
-	test := Dirs("testdata/depth1", "").WithVars(map[string]interface{}{}).InitPlanShow(t)
-	require.NoError(t, test.Err)
+	_, err := Dirs("testdata/depth1", "").WithVars(map[string]interface{}{}).InitPlanShow(t)
+	require.NoError(t, err)
 }
 
 func TestDirsWithFunc(t *testing.T) {
@@ -26,7 +26,7 @@ func TestDirsWithFunc(t *testing.T) {
 		return f.Close()
 	}
 
-	test := Dirs("testdata/depth1", "").WithVars(map[string]interface{}{}).InitPlanShowWithPrepFunc(t, f)
-	require.NoError(t, test.Err)
+	test, err := Dirs("testdata/depth1", "").WithVars(map[string]interface{}{}).InitPlanShowWithPrepFunc(t, f)
+	require.NoError(t, err)
 	require.FileExists(t, filepath.Join(test.TmpDir, "test.txt"))
 }

@@ -15,8 +15,8 @@ const (
 func TestHasValueStrings(t *testing.T) {
 	t.Parallel()
 
-	tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, tftest.Err)
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
 	defer tftest.Cleanup()
 	InPlan(tftest.Plan).That("local_file.test").Key("content").HasValue("test").IfNotFail(t)
 }
@@ -24,8 +24,8 @@ func TestHasValueStrings(t *testing.T) {
 func TestHasValueStringsNotEqualError(t *testing.T) {
 	t.Parallel()
 
-	tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, tftest.Err)
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
 	defer tftest.Cleanup()
 	assert.ErrorContains(
 		t,
@@ -37,8 +37,8 @@ func TestHasValueStringsNotEqualError(t *testing.T) {
 func TestHasValueStringsToInt(t *testing.T) {
 	t.Parallel()
 
-	tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, tftest.Err)
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
 	defer tftest.Cleanup()
 	assert.Error(
 		t,
@@ -49,7 +49,7 @@ func TestHasValueStringsToInt(t *testing.T) {
 func TestKeyNotExistsError(t *testing.T) {
 	t.Parallel()
 
-	tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	tftest, _ := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
 	defer tftest.Cleanup()
 	assert.ErrorContains(
 		t,
@@ -61,17 +61,17 @@ func TestKeyNotExistsError(t *testing.T) {
 func TestKeyNotExists(t *testing.T) {
 	t.Parallel()
 
-	tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
 	defer tftest.Cleanup()
-	require.NoError(t, tftest.Err)
+	require.NoError(t, err)
 	InPlan(tftest.Plan).That("local_file.test").Key("not_exists").DoesNotExist().IfNotFail(t)
 }
 
 func TestInSubdir(t *testing.T) {
 	t.Parallel()
 
-	tftest := setuptest.Dirs("testdata/test-in-subdir", "subdir").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, tftest.Err)
+	tftest, err := setuptest.Dirs("testdata/test-in-subdir", "subdir").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
 	defer tftest.Cleanup()
 	InPlan(tftest.Plan).That("module.test.local_file.test").Key("content").HasValue("test").IfNotFail(t)
 }

@@ -43,7 +43,7 @@ func getDefaultTerraformOptions(t *testing.T, dir string) *terraform.Options {
 //
 // The function will return the temporary directory to use with the terraform options struct, as well as
 // a function that can be used with defer to clean up afterwards.
-func CopyTerraformFolderToTempAndCleanUp(t *testing.T, moduleDir string, testDir string) Response {
+func CopyTerraformFolderToTempAndCleanUp(t *testing.T, moduleDir string, testDir string) (Response, error) {
 	var resp Response
 	tmp := test_structure.CopyTerraformFolderToTemp(t, moduleDir, testDir)
 	// We normalise, then work out the depth of the test directory relative
@@ -54,8 +54,8 @@ func CopyTerraformFolderToTempAndCleanUp(t *testing.T, moduleDir string, testDir
 	absTestPath := filepath.Join(moduleDir, testDir)
 	relPath, err := filepath.Rel(moduleDir, absTestPath)
 	if err != nil {
-		resp.Err = fmt.Errorf("could not get relative path to test directory: %v", err)
-		return resp
+		err = fmt.Errorf("could not get relative path to test directory: %v", err)
+		return resp, err
 	}
 	list := strings.Split(relPath, string(os.PathSeparator))
 	depth := len(list)
@@ -71,7 +71,7 @@ func CopyTerraformFolderToTempAndCleanUp(t *testing.T, moduleDir string, testDir
 		removeTestDir(t, dir)
 	}
 
-	return resp
+	return resp, nil
 }
 
 // removeTestDir removes the supplied test directory

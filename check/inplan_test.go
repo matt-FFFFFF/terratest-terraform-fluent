@@ -10,8 +10,8 @@ import (
 func TestNumberOfResourcesInPlan(t *testing.T) {
 	t.Parallel()
 
-	tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, tftest.Err)
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
 	defer tftest.Cleanup()
 	InPlan(tftest.Plan).NumberOfResourcesEquals(2).IfNotFail(t)
 }
@@ -19,8 +19,8 @@ func TestNumberOfResourcesInPlan(t *testing.T) {
 func TestNumberOfResourcesInPlanWithError(t *testing.T) {
 	t.Parallel()
 
-	tftest := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
-	require.NoError(t, tftest.Err)
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
 	defer tftest.Cleanup()
 	InPlan(tftest.Plan).NumberOfResourcesEquals(1).ErrorContains(t, "expected 1 resources, got 2")
 }

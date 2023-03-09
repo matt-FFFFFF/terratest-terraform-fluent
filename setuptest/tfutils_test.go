@@ -16,8 +16,8 @@ import (
 func TestCopyFilesToTempAndCleanupDepth1(t *testing.T) {
 	t.Parallel()
 
-	resp := CopyTerraformFolderToTempAndCleanUp(t, "testdata/depth1", "")
-	assert.NoError(t, resp.Err)
+	resp, err := CopyTerraformFolderToTempAndCleanUp(t, "testdata/depth1", "")
+	assert.NoError(t, err)
 	assert.DirExists(t, resp.TmpDir)
 	resp.Cleanup()
 	parent := filepath.Dir(resp.TmpDir)
@@ -28,8 +28,8 @@ func TestCopyFilesToTempAndCleanupDepth1(t *testing.T) {
 func TestCopyFilesToTempAndCleanupDepth2(t *testing.T) {
 	t.Parallel()
 
-	resp := CopyTerraformFolderToTempAndCleanUp(t, "testdata/depth2", "subdir")
-	assert.NoError(t, resp.Err)
+	resp, err := CopyTerraformFolderToTempAndCleanUp(t, "testdata/depth2", "subdir")
+	assert.NoError(t, err)
 	assert.DirExists(t, resp.TmpDir)
 	resp.Cleanup()
 	parent := filepath.Dir(filepath.Dir(resp.TmpDir))
@@ -40,8 +40,8 @@ func TestCopyFilesToTempAndCleanupDepth2(t *testing.T) {
 func TestCopyFilesToTempAndCleanupDepth3(t *testing.T) {
 	t.Parallel()
 
-	resp := CopyTerraformFolderToTempAndCleanUp(t, "testdata/depth3", "subdir/subdir2")
-	assert.NoError(t, resp.Err)
+	resp, err := CopyTerraformFolderToTempAndCleanUp(t, "testdata/depth3", "subdir/subdir2")
+	assert.NoError(t, err)
 	assert.DirExists(t, resp.TmpDir)
 	resp.Cleanup()
 	parent := filepath.Dir(filepath.Dir(filepath.Dir(resp.TmpDir)))

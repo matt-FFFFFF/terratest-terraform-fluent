@@ -1,12 +1,44 @@
 package setuptest
 
 import (
+	"errors"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"gopkg.in/matryer/try.v1"
 )
+
+type TestError struct {
+	msg string
+	T   *testing.T
+}
+
+func newTestError(msg string) *TestError {
+	return &TestError{
+		msg: msg,
+	}
+}
+
+func newTestErrorf(format string, args ...any) *TestError {
+	return &TestError{
+		msg: fmt.Sprintf(format, args...),
+	}
+}
+
+// Implement Error interface
+func (e *TestError) Error() string {
+	return e.msg
+}
+
+// AsError returns a regular error type that can be used in the usual way.
+func (e *TestError) AsError() error {
+	if e == nil {
+		return nil
+	}
+	return errors.New(e.msg)
+}
 
 // Retry is a configuration for retrying a terraform command.
 type Retry struct {
@@ -48,6 +80,41 @@ func (resp Response) ApplyIdempotent(t *testing.T) error {
 	return err
 }
 
+// Apply runs terraform apply, then performs a retry loop with a plan.
+// If the configuration is not idempotent, it will retry up to the specified number of times.
+// It then returns the error.
+func (resp Response) ApplyIdempotentRetry(t *testing.T, r Retry) error {
+	_, err := terraform.ApplyE(t, resp.Options)
+
+	if err != nil {
+		return err
+	}
+
+	if try.MaxRetries < r.Max {
+		try.MaxRetries = r.Max
+	}
+
+	err = try.Do(func(attempt int) (bool, error) {
+		exitCode, err := terraform.PlanExitCodeE(t, resp.Options)
+		if err != nil {
+			t.Logf("terraform plan failed attempt %d/%d: waiting %s", attempt, r.Max, r.Wait)
+			time.Sleep(r.Wait)
+		}
+		if exitCode != 0 {
+			t.Logf("terraform not idempotent attempt %d/%d: waiting %s", attempt, r.Max, r.Wait)
+			err = errors.New("terraform configuration not idempotent")
+			time.Sleep(r.Wait)
+		}
+		return attempt < r.Max, err
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Destroy runs terraform destroy for the given Response and returns the error.
 func (resp Response) Destroy(t *testing.T) error {
 	_, err := terraform.DestroyE(t, resp.Options)
@@ -55,7 +122,7 @@ func (resp Response) Destroy(t *testing.T) error {
 }
 
 // DestroyWithRetry will retry the terraform destroy command up to the specified number of times.
-func (resp Response) DestroyWithRetry(t *testing.T, r Retry) error {
+func (resp Response) DestroyRetry(t *testing.T, r Retry) error {
 	if try.MaxRetries < r.Max {
 		try.MaxRetries = r.Max
 	}
