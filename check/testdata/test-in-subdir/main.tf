@@ -14,5 +14,5 @@ resource "local_file" "test" {
 
 resource "local_file" "test_int" {
   content  = 123
-  filename = "test.txt"
+  filename = "test_int.txt"
 }

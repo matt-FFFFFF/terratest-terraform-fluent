@@ -1,6 +1,7 @@
 package check
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/matt-FFFFFF/terratest-terraform-fluent/setuptest"
@@ -11,6 +12,11 @@ import (
 const (
 	basicTestData = "testdata/basic"
 )
+
+func Bool(b bool) *bool {
+	var b2 = b
+	return &b2
+}
 
 func TestHasValueStrings(t *testing.T) {
 	t.Parallel()
@@ -42,7 +48,7 @@ func TestHasValueStringsToInt(t *testing.T) {
 	defer tftest.Cleanup()
 	assert.Error(
 		t,
-		InPlan(tftest.Plan).That("local_file.test_int").Key("content").HasValue(123),
+		InPlan(tftest.Plan).That("local_file.test_int").Key("content").HasValue(123).AsError(),
 	)
 }
 
@@ -74,4 +80,52 @@ func TestInSubdir(t *testing.T) {
 	require.NoError(t, err)
 	defer tftest.Cleanup()
 	InPlan(tftest.Plan).That("module.test.local_file.test").Key("content").HasValue("test").IfNotFail(t)
+}
+
+func TestJsonArrayAssertionFunc(t *testing.T) {
+	t.Parallel()
+
+	f := func(input interface{}) (*bool, error) {
+		i, ok := input.([]interface{})
+		if !ok {
+			return nil, fmt.Errorf("JSON input is not an array")
+		}
+		if len(i) == 0 {
+			return nil, fmt.Errorf("JSON input is empty")
+		}
+		if i[0].(map[string]interface{})["test"] != "test" {
+			return nil, fmt.Errorf("JSON input key name is not equal to test")
+		}
+
+		return Bool(true), nil
+	}
+
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer tftest.Cleanup()
+	InPlan(tftest.Plan).That("local_file.test_array_json").Key("content").ContainsJsonValue(JsonAssertionFunc(f)).IfNotFail(t)
+}
+
+func TestJsonSimpleAssertionFunc(t *testing.T) {
+	t.Parallel()
+
+	f := func(input interface{}) (*bool, error) {
+		i, ok := input.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("JSON input is not an map")
+		}
+		if len(i) == 0 {
+			return nil, fmt.Errorf("JSON input is empty")
+		}
+		if i["test"] != "test" {
+			return nil, fmt.Errorf("JSON input key name is not equal to test")
+		}
+
+		return Bool(true), nil
+	}
+
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer tftest.Cleanup()
+	InPlan(tftest.Plan).That("local_file.test_simple_json").Key("content").ContainsJsonValue(JsonAssertionFunc(f)).IfNotFail(t)
 }

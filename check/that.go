@@ -1,6 +1,7 @@
 package check
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 
@@ -13,6 +14,8 @@ type ThatType struct {
 	Plan         *terraform.PlanStruct
 	ResourceName string
 }
+
+type JsonAssertionFunc func(input interface{}) (*bool, error)
 
 // That returns a type which can be used for more fluent assertions for a given Resource
 func (p PlanType) That(resourceName string) ThatType {
@@ -87,6 +90,57 @@ func (twk ThatTypeWithKey) HasValue(expected interface{}) *CheckError {
 			expected,
 		)
 	}
+	return nil
+}
+
+// ContainsJsonValue returns a *CheckError which asserts upon a given JSON string set into
+// the State by deserializing it and then asserting on it via the JsonAssertionFunc
+func (twk ThatTypeWithKey) ContainsJsonValue(assertion JsonAssertionFunc) *CheckError {
+	if err := twk.Exists(); err != nil {
+		return err
+	}
+
+	if twk.HasValue("") == nil {
+		return newCheckErrorf(
+			"%s: key %s was empty",
+			twk.ResourceName,
+			twk.Key,
+		)
+	}
+
+	resource := twk.Plan.ResourcePlannedValuesMap[twk.ResourceName]
+	actual := resource.AttributeValues[twk.Key]
+
+	var out interface{}
+	if err := json.Unmarshal([]byte(actual.(string)), &out); err != nil {
+		return newCheckErrorf(
+			"%s: deserializing the value for %q (%q) to json: %+v",
+			twk.ResourceName,
+			twk.Key,
+			actual,
+			err,
+		)
+	}
+
+	ok, err := assertion(out)
+	if err != nil {
+		return newCheckErrorf(
+			"%s: asserting value for %q: %+v",
+			twk.ResourceName,
+			twk.Key,
+			err,
+		)
+	}
+
+	if ok == nil || !*ok {
+		return newCheckErrorf(
+			"%s: assertion failed for %q: %+v",
+			twk.ResourceName,
+			twk.Key,
+			err,
+		)
+	}
+
 	return nil
 }
 
