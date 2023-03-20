@@ -1,6 +1,7 @@
 package check
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -85,9 +86,9 @@ func TestInSubdir(t *testing.T) {
 func TestJsonArrayAssertionFunc(t *testing.T) {
 	t.Parallel()
 
-	f := func(input interface{}) (*bool, error) {
-		i, ok := input.([]interface{})
-		if !ok {
+	f := func(input json.RawMessage) (*bool, error) {
+		i := make([]interface{}, 0, 1)
+		if err := json.Unmarshal(input, &i); err != nil {
 			return nil, fmt.Errorf("JSON input is not an array")
 		}
 		if len(i) == 0 {
@@ -109,23 +110,24 @@ func TestJsonArrayAssertionFunc(t *testing.T) {
 func TestJsonSimpleAssertionFunc(t *testing.T) {
 	t.Parallel()
 
-	f := func(input interface{}) (*bool, error) {
-		i, ok := input.(map[string]interface{})
-		if !ok {
-			return nil, fmt.Errorf("JSON input is not an map")
-		}
-		if len(i) == 0 {
-			return nil, fmt.Errorf("JSON input is empty")
-		}
-		if i["test"] != "test" {
-			return nil, fmt.Errorf("JSON input key name is not equal to test")
-		}
-
-		return Bool(true), nil
-	}
+	f := JsonAssertionFunc(
+		func(input json.RawMessage) (*bool, error) {
+			i := make(map[string]interface{})
+			if err := json.Unmarshal(input, &i); err != nil {
+				return nil, fmt.Errorf("JSON input is not an map")
+			}
+			if len(i) == 0 {
+				return nil, fmt.Errorf("JSON input is empty")
+			}
+			if i["test"] != "test" {
+				return Bool(false), nil
+			}
+			return Bool(true), nil
+		},
+	)
 
 	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
 	require.NoError(t, err)
 	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("local_file.test_simple_json").Key("content").ContainsJsonValue(JsonAssertionFunc(f)).IfNotFail(t)
+	InPlan(tftest.Plan).That("local_file.test_simple_json").Key("content").ContainsJsonValue(f).IfNotFail(t)
 }

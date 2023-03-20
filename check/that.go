@@ -15,7 +15,7 @@ type ThatType struct {
 	ResourceName string
 }
 
-type JsonAssertionFunc func(input interface{}) (*bool, error)
+type JsonAssertionFunc func(input json.RawMessage) (*bool, error)
 
 // That returns a type which can be used for more fluent assertions for a given Resource
 func (p PlanType) That(resourceName string) ThatType {
@@ -110,19 +110,8 @@ func (twk ThatTypeWithKey) ContainsJsonValue(assertion JsonAssertionFunc) *Check
 
 	resource := twk.Plan.ResourcePlannedValuesMap[twk.ResourceName]
 	actual := resource.AttributeValues[twk.Key]
-
-	var out interface{}
-	if err := json.Unmarshal([]byte(actual.(string)), &out); err != nil {
-		return newCheckErrorf(
-			"%s: deserializing the value for %q (%q) to json: %+v",
-			twk.ResourceName,
-			twk.Key,
-			actual,
-			err,
-		)
-	}
-
-	ok, err := assertion(out)
+	j := json.RawMessage(actual.(string))
+	ok, err := assertion(j)
 	if err != nil {
 		return newCheckErrorf(
 			"%s: asserting value for %q: %+v",
