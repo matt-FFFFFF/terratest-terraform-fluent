@@ -68,26 +68,27 @@ var SlowRetry = Retry{
 }
 
 // Apply runs terraform apply for the given Response and returns the error.
-func (resp Response) Apply(t *testing.T) error {
+func (resp Response) Apply(t *testing.T) *TestError {
+
 	_, err := terraform.ApplyE(t, resp.Options)
-	return err
+	return newTestError(err.Error())
 }
 
 // Apply runs terraform apply, then plan for the given Response and checks for any changes,
 // it then returns the error.
-func (resp Response) ApplyIdempotent(t *testing.T) error {
+func (resp Response) ApplyIdempotent(t *testing.T) *TestError {
 	_, err := terraform.ApplyAndIdempotentE(t, resp.Options)
-	return err
+	return newTestError(err.Error())
 }
 
 // Apply runs terraform apply, then performs a retry loop with a plan.
 // If the configuration is not idempotent, it will retry up to the specified number of times.
 // It then returns the error.
-func (resp Response) ApplyIdempotentRetry(t *testing.T, r Retry) error {
+func (resp Response) ApplyIdempotentRetry(t *testing.T, r Retry) *TestError {
 	_, err := terraform.ApplyE(t, resp.Options)
 
 	if err != nil {
-		return err
+		return newTestError(err.Error())
 	}
 
 	if try.MaxRetries < r.Max {
@@ -109,20 +110,20 @@ func (resp Response) ApplyIdempotentRetry(t *testing.T, r Retry) error {
 	})
 
 	if err != nil {
-		return err
+		return newTestError(err.Error())
 	}
 
 	return nil
 }
 
 // Destroy runs terraform destroy for the given Response and returns the error.
-func (resp Response) Destroy(t *testing.T) error {
+func (resp Response) Destroy(t *testing.T) *TestError {
 	_, err := terraform.DestroyE(t, resp.Options)
-	return err
+	return newTestError(err.Error())
 }
 
 // DestroyWithRetry will retry the terraform destroy command up to the specified number of times.
-func (resp Response) DestroyRetry(t *testing.T, r Retry) error {
+func (resp Response) DestroyRetry(t *testing.T, r Retry) *TestError {
 	if try.MaxRetries < r.Max {
 		try.MaxRetries = r.Max
 	}
@@ -135,8 +136,7 @@ func (resp Response) DestroyRetry(t *testing.T, r Retry) error {
 		return attempt < r.Max, err
 	})
 	if err != nil {
-		t.Logf("terraform destroy failed after %d attempts: %v", r.Max, err)
-		return err
+		return newTestErrorf("terraform destroy failed after %d attempts: %v", r.Max, err)
 	}
 	return nil
 }
