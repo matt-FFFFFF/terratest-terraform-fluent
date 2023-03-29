@@ -2,55 +2,12 @@ package setuptest
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"gopkg.in/matryer/try.v1"
 )
-
-type TestError struct {
-	msg string
-	//T   *testing.T
-}
-
-func newTestError(msg string) *TestError {
-	return &TestError{
-		msg: msg,
-	}
-}
-
-func newTestErrorf(format string, args ...any) *TestError {
-	return &TestError{
-		msg: fmt.Sprintf(format, args...),
-	}
-}
-
-// Implement Error interface
-func (e *TestError) Error() string {
-	return e.msg
-}
-
-// AsError returns a regular error type that can be used in the usual way.
-func (e *TestError) AsError() error {
-	if e == nil {
-		return nil
-	}
-	return errors.New(e.msg)
-}
-
-func (e *TestError) IfNotFail(t *testing.T) {
-	if e != nil {
-		t.Errorf(e.msg)
-	}
-}
-
-func (e *TestError) IfNotFailNow(t *testing.T) {
-	if e != nil {
-		t.Fatalf(e.msg)
-	}
-}
 
 // Retry is a configuration for retrying a terraform command.
 type Retry struct {
@@ -83,14 +40,20 @@ var SlowRetry = Retry{
 func (resp Response) Apply(t *testing.T) *TestError {
 
 	_, err := terraform.ApplyE(t, resp.Options)
-	return newTestError(err.Error())
+	if err != nil {
+		return newTestError(err.Error())
+	}
+	return nil
 }
 
 // Apply runs terraform apply, then plan for the given Response and checks for any changes,
 // it then returns the error.
 func (resp Response) ApplyIdempotent(t *testing.T) *TestError {
 	_, err := terraform.ApplyAndIdempotentE(t, resp.Options)
-	return newTestError(err.Error())
+	if err != nil {
+		return newTestError(err.Error())
+	}
+	return nil
 }
 
 // Apply runs terraform apply, then performs a retry loop with a plan.
@@ -131,7 +94,10 @@ func (resp Response) ApplyIdempotentRetry(t *testing.T, r Retry) *TestError {
 // Destroy runs terraform destroy for the given Response and returns the error.
 func (resp Response) Destroy(t *testing.T) *TestError {
 	_, err := terraform.DestroyE(t, resp.Options)
-	return newTestError(err.Error())
+	if err != nil {
+		return newTestError(err.Error())
+	}
+	return nil
 }
 
 // DestroyWithRetry will retry the terraform destroy command up to the specified number of times.

@@ -11,8 +11,8 @@ func TestApply(t *testing.T) {
 
 	test, err := Dirs("testdata/depth1", "").WithVars(nil).InitPlanShow(t)
 	require.NoError(t, err)
-	require.NoError(t, test.Apply(t))
-	require.NoError(t, test.Destroy(t))
+	test.Apply(t).IfNotFail(t)
+	test.Destroy(t).IfNotFail(t)
 }
 
 func TestApplyIdempotent(t *testing.T) {
@@ -20,6 +20,6 @@ func TestApplyIdempotent(t *testing.T) {
 
 	test, err := Dirs("testdata/depth1", "").WithVars(nil).InitPlanShow(t)
 	require.NoError(t, err)
-	require.NoError(t, test.ApplyIdempotent(t))
-	require.NoError(t, test.Destroy(t))
+	test.ApplyIdempotent(t).IfNotFail(t)
+	test.Destroy(t).IfNotFail(t)
 }
