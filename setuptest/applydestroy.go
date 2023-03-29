@@ -12,7 +12,7 @@ import (
 
 type TestError struct {
 	msg string
-	T   *testing.T
+	//T   *testing.T
 }
 
 func newTestError(msg string) *TestError {
@@ -38,6 +38,18 @@ func (e *TestError) AsError() error {
 		return nil
 	}
 	return errors.New(e.msg)
+}
+
+func (e *TestError) IfNotFail(t *testing.T) {
+	if e != nil {
+		t.Errorf(e.msg)
+	}
+}
+
+func (e *TestError) IfNotFailNow(t *testing.T) {
+	if e != nil {
+		t.Fatalf(e.msg)
+	}
 }
 
 // Retry is a configuration for retrying a terraform command.
