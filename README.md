@@ -41,8 +41,7 @@ func TestSomeTerraform( t *testing.T) {
   // Check that the plan contains the expected resource, with an attribute called `my_attribute` and
   // a corresponding value of `my_value`.
   check.InPlan(tftest.Plan).That("my_terraform_resource.name").Key("my_attribute").HasValue("my_value").ErrorIsNil(t)
-
-  tftest.ApplyIdempotent(t).IfNotFail(t)
-  defer tftest.Destroy(t).IfNotFail(t)
+  defer tftest.Destroy(t)
+  tftest.ApplyIdempotent(t).ErrorIsNil(t)
 }
 ```
