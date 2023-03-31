@@ -94,7 +94,7 @@ func (twk ThatTypeWithKey) HasValue(expected interface{}) *testerror.Error {
 	return nil
 }
 
-// ContainsJsonValue returns a *CheckError which asserts upon a given JSON string set into
+// ContainsJsonValue returns a *testerror.Error which asserts upon a given JSON string set into
 // the State by deserializing it and then asserting on it via the JsonAssertionFunc
 func (twk ThatTypeWithKey) ContainsJsonValue(assertion JsonAssertionFunc) *testerror.Error {
 	if err := twk.Exists(); err != nil {
@@ -134,7 +134,7 @@ func (twk ThatTypeWithKey) ContainsJsonValue(assertion JsonAssertionFunc) *teste
 	return nil
 }
 
-// Exists returns a CheckError if the resource does not exist in the plan or if the key does not exist in the resource
+// Exists returns a *testerror.Error if the resource does not exist in the plan or if the key does not exist in the resource
 func (twk ThatTypeWithKey) Exists() *testerror.Error {
 	if err := InPlan(twk.Plan).That(twk.ResourceName).Exists(); err != nil {
 		return testerror.New(err.Error())
@@ -151,7 +151,7 @@ func (twk ThatTypeWithKey) Exists() *testerror.Error {
 	return nil
 }
 
-// DoesNotExist returns a CheckError if the resource does not exist in the plan or if the key exists in the resource
+// DoesNotExist returns a *testerror.Error if the resource does not exist in the plan or if the key exists in the resource
 func (twk ThatTypeWithKey) DoesNotExist() *testerror.Error {
 	if err := InPlan(twk.Plan).That(twk.ResourceName).Exists(); err != nil {
 		return testerror.Newf(err.Error())

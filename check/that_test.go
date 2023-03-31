@@ -172,3 +172,64 @@ func TestJsonSimpleAssertionFunc(t *testing.T) {
 	defer tftest.Cleanup()
 	InPlan(tftest.Plan).That("local_file.test_simple_json").Key("content").ContainsJsonValue(f).ErrorIsNil(t)
 }
+
+func TestResourceDoesNotExist(t *testing.T) {
+	t.Parallel()
+
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer tftest.Cleanup()
+	InPlan(tftest.Plan).That("not_exist").DoesNotExist().ErrorIsNil(t)
+}
+
+func TestResourceDoesNotExistFail(t *testing.T) {
+	t.Parallel()
+
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer tftest.Cleanup()
+	err = InPlan(tftest.Plan).That("local_file.test").DoesNotExist()
+	require.ErrorContains(t, err, "local_file.test: resource found in plan")
+}
+
+func TestKeyDoesNotExist(t *testing.T) {
+	t.Parallel()
+
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer tftest.Cleanup()
+	InPlan(tftest.Plan).That("local_file.test").Key("not_exist").DoesNotExist().ErrorIsNil(t)
+}
+
+func TestKeyDoesNotExistFail(t *testing.T) {
+	t.Parallel()
+
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	require.NoError(t, err)
+	defer tftest.Cleanup()
+	err = InPlan(tftest.Plan).That("local_file.test").Key("content").DoesNotExist()
+	require.ErrorContains(t, err, "local_file.test: key content found in resource")
+}
+
+func TestValidateEqualArgs(t *testing.T) {
+	require.Nil(t, validateEqualArgs(nil, nil))
+}
+
+func TestValidateEqualArgsFuncFail(t *testing.T) {
+	f1 := func() {}
+	f2 := func() {}
+	assert.ErrorContains(t, validateEqualArgs(f1, nil), "cannot take func type as argument")
+	assert.ErrorContains(t, validateEqualArgs(nil, f2), "cannot take func type as argument")
+}
+
+func TestIsFunction(t *testing.T) {
+	f := func() {}
+	assert.True(t, isFunction(f))
+}
+
+func TestIsFunctionNot(t *testing.T) {
+	i := 1
+	assert.False(t, isFunction(i))
+	var s *string
+	assert.False(t, isFunction(s))
+}
