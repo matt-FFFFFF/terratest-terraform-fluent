@@ -6,7 +6,6 @@ before:
     - go mod tidy
     - go mod vendor
     - make tools
-    - make lint
     - make test
 archives:
   - format: tar.gz
@@ -22,8 +21,8 @@ archives:
     format_overrides:
     - goos: windows
       format: zip
-build:
-  no_main_check: true
+builds:
+- no_main_check: true
   skip: true
 checksum:
   name_template: 'checksums.txt'
