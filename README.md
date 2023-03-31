@@ -25,7 +25,7 @@ const(
 func TestSomeTerraform( t *testing.T) {
   // Set up the Terraform test and run terraform init, plan and show,
   // saving the plan output to a struct.
-  // The returned struct in tftest contains the plan struct, the clean up func and any errors.
+  // The returned struct in tftest contains the plan struct, and the clean up func.
   //
   // The Dirs inputs are the test root directory and the relative path to the test code.
   // (this must be a subdirectory of the test root directory)
