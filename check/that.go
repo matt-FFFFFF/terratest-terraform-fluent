@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/matt-FFFFFF/terratest-terraform-fluent/testerror"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,9 +27,9 @@ func (p PlanType) That(resourceName string) ThatType {
 }
 
 // Exists returns an error if the resource does not exist in the plan
-func (t ThatType) Exists() *CheckError {
+func (t ThatType) Exists() *testerror.Error {
 	if _, ok := t.Plan.ResourcePlannedValuesMap[t.ResourceName]; !ok {
-		return newCheckErrorf(
+		return testerror.Newf(
 			"%s: resource not found in plan",
 			t.ResourceName,
 		)
@@ -37,9 +38,9 @@ func (t ThatType) Exists() *CheckError {
 }
 
 // DoesNotExist returns an error if the resource exists in the plan
-func (t ThatType) DoesNotExist() *CheckError {
+func (t ThatType) DoesNotExist() *testerror.Error {
 	if _, exists := t.Plan.ResourcePlannedValuesMap[t.ResourceName]; exists {
-		return newCheckErrorf(
+		return testerror.Newf(
 			"%s: resource found in plan",
 			t.ResourceName,
 		)
@@ -65,7 +66,7 @@ type ThatTypeWithKey struct {
 
 // HasValue returns a CheckError if the resource does not exist in the plan or if the value of the key does not match the
 // expected value
-func (twk ThatTypeWithKey) HasValue(expected interface{}) *CheckError {
+func (twk ThatTypeWithKey) HasValue(expected interface{}) *testerror.Error {
 	if err := twk.Exists(); err != nil {
 		return err
 	}
@@ -74,7 +75,7 @@ func (twk ThatTypeWithKey) HasValue(expected interface{}) *CheckError {
 	actual := resource.AttributeValues[twk.Key]
 
 	if err := validateEqualArgs(expected, actual); err != nil {
-		return newCheckErrorf("invalid operation: %#v == %#v (%s)",
+		return testerror.Newf("invalid operation: %#v == %#v (%s)",
 			expected,
 			actual,
 			err,
@@ -82,7 +83,7 @@ func (twk ThatTypeWithKey) HasValue(expected interface{}) *CheckError {
 	}
 
 	if !assert.ObjectsAreEqualValues(actual, expected) {
-		return newCheckErrorf(
+		return testerror.Newf(
 			"%s: attribute %s, planned value %s not equal to assertion %s",
 			twk.ResourceName,
 			twk.Key,
@@ -95,13 +96,13 @@ func (twk ThatTypeWithKey) HasValue(expected interface{}) *CheckError {
 
 // ContainsJsonValue returns a *CheckError which asserts upon a given JSON string set into
 // the State by deserializing it and then asserting on it via the JsonAssertionFunc
-func (twk ThatTypeWithKey) ContainsJsonValue(assertion JsonAssertionFunc) *CheckError {
+func (twk ThatTypeWithKey) ContainsJsonValue(assertion JsonAssertionFunc) *testerror.Error {
 	if err := twk.Exists(); err != nil {
 		return err
 	}
 
 	if twk.HasValue("") == nil {
-		return newCheckErrorf(
+		return testerror.Newf(
 			"%s: key %s was empty",
 			twk.ResourceName,
 			twk.Key,
@@ -113,7 +114,7 @@ func (twk ThatTypeWithKey) ContainsJsonValue(assertion JsonAssertionFunc) *Check
 	j := json.RawMessage(actual.(string))
 	ok, err := assertion(j)
 	if err != nil {
-		return newCheckErrorf(
+		return testerror.Newf(
 			"%s: asserting value for %q: %+v",
 			twk.ResourceName,
 			twk.Key,
@@ -122,7 +123,7 @@ func (twk ThatTypeWithKey) ContainsJsonValue(assertion JsonAssertionFunc) *Check
 	}
 
 	if ok == nil || !*ok {
-		return newCheckErrorf(
+		return testerror.Newf(
 			"%s: assertion failed for %q: %+v",
 			twk.ResourceName,
 			twk.Key,
@@ -134,14 +135,14 @@ func (twk ThatTypeWithKey) ContainsJsonValue(assertion JsonAssertionFunc) *Check
 }
 
 // Exists returns a CheckError if the resource does not exist in the plan or if the key does not exist in the resource
-func (twk ThatTypeWithKey) Exists() *CheckError {
+func (twk ThatTypeWithKey) Exists() *testerror.Error {
 	if err := InPlan(twk.Plan).That(twk.ResourceName).Exists(); err != nil {
-		return newCheckError(err.Error())
+		return testerror.New(err.Error())
 	}
 
 	resource := twk.Plan.ResourcePlannedValuesMap[twk.ResourceName]
 	if _, exists := resource.AttributeValues[twk.Key]; !exists {
-		return newCheckErrorf(
+		return testerror.Newf(
 			"%s: key %s not found in resource",
 			twk.ResourceName,
 			twk.Key,
@@ -151,14 +152,14 @@ func (twk ThatTypeWithKey) Exists() *CheckError {
 }
 
 // DoesNotExist returns a CheckError if the resource does not exist in the plan or if the key exists in the resource
-func (twk ThatTypeWithKey) DoesNotExist() *CheckError {
+func (twk ThatTypeWithKey) DoesNotExist() *testerror.Error {
 	if err := InPlan(twk.Plan).That(twk.ResourceName).Exists(); err != nil {
-		return newCheckError(err.Error())
+		return testerror.Newf(err.Error())
 	}
 
 	resource := twk.Plan.ResourcePlannedValuesMap[twk.ResourceName]
 	if _, exists := resource.AttributeValues[twk.Key]; exists {
-		return newCheckErrorf(
+		return testerror.Newf(
 			"%s: key %s found in resource",
 			twk.ResourceName,
 			twk.Key,

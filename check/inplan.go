@@ -2,6 +2,7 @@ package check
 
 import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/matt-FFFFFF/terratest-terraform-fluent/testerror"
 )
 
 func InPlan(plan *terraform.PlanStruct) PlanType {
@@ -14,10 +15,10 @@ type PlanType struct {
 	Plan *terraform.PlanStruct
 }
 
-func (p PlanType) NumberOfResourcesEquals(expected int) *CheckError {
+func (p PlanType) NumberOfResourcesEquals(expected int) *testerror.Error {
 	actual := len(p.Plan.ResourcePlannedValuesMap)
 	if actual != expected {
-		return newCheckErrorf("expected %d resources, got %d", expected, actual)
+		return testerror.Newf("expected %d resources, got %d", expected, actual)
 	}
 	return nil
 }

@@ -13,7 +13,7 @@ func TestNumberOfResourcesInPlan(t *testing.T) {
 	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
 	require.NoError(t, err)
 	defer tftest.Cleanup()
-	InPlan(tftest.Plan).NumberOfResourcesEquals(4).IfNotFail(t)
+	InPlan(tftest.Plan).NumberOfResourcesEquals(4).ErrorIsNil(t)
 }
 
 func TestNumberOfResourcesInPlanWithError(t *testing.T) {

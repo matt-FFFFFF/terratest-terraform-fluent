@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/matt-FFFFFF/terratest-terraform-fluent/testerror"
 	"gopkg.in/matryer/try.v1"
 )
 
@@ -37,21 +38,21 @@ var SlowRetry = Retry{
 }
 
 // Apply runs terraform apply for the given Response and returns the error.
-func (resp Response) Apply(t *testing.T) *TestError {
+func (resp Response) Apply(t *testing.T) *testerror.Error {
 
 	_, err := terraform.ApplyE(t, resp.Options)
 	if err != nil {
-		return newTestError(err.Error())
+		return testerror.New(err.Error())
 	}
 	return nil
 }
 
 // Apply runs terraform apply, then plan for the given Response and checks for any changes,
 // it then returns the error.
-func (resp Response) ApplyIdempotent(t *testing.T) *TestError {
+func (resp Response) ApplyIdempotent(t *testing.T) *testerror.Error {
 	_, err := terraform.ApplyAndIdempotentE(t, resp.Options)
 	if err != nil {
-		return newTestError(err.Error())
+		return testerror.New(err.Error())
 	}
 	return nil
 }
@@ -59,11 +60,11 @@ func (resp Response) ApplyIdempotent(t *testing.T) *TestError {
 // Apply runs terraform apply, then performs a retry loop with a plan.
 // If the configuration is not idempotent, it will retry up to the specified number of times.
 // It then returns the error.
-func (resp Response) ApplyIdempotentRetry(t *testing.T, r Retry) *TestError {
+func (resp Response) ApplyIdempotentRetry(t *testing.T, r Retry) *testerror.Error {
 	_, err := terraform.ApplyE(t, resp.Options)
 
 	if err != nil {
-		return newTestError(err.Error())
+		return testerror.New(err.Error())
 	}
 
 	if try.MaxRetries < r.Max {
@@ -85,23 +86,23 @@ func (resp Response) ApplyIdempotentRetry(t *testing.T, r Retry) *TestError {
 	})
 
 	if err != nil {
-		return newTestError(err.Error())
+		return testerror.New(err.Error())
 	}
 
 	return nil
 }
 
 // Destroy runs terraform destroy for the given Response and returns the error.
-func (resp Response) Destroy(t *testing.T) *TestError {
+func (resp Response) Destroy(t *testing.T) *testerror.Error {
 	_, err := terraform.DestroyE(t, resp.Options)
 	if err != nil {
-		return newTestError(err.Error())
+		return testerror.New(err.Error())
 	}
 	return nil
 }
 
 // DestroyWithRetry will retry the terraform destroy command up to the specified number of times.
-func (resp Response) DestroyRetry(t *testing.T, r Retry) *TestError {
+func (resp Response) DestroyRetry(t *testing.T, r Retry) *testerror.Error {
 	if try.MaxRetries < r.Max {
 		try.MaxRetries = r.Max
 	}
@@ -114,7 +115,7 @@ func (resp Response) DestroyRetry(t *testing.T, r Retry) *TestError {
 		return attempt < r.Max, err
 	})
 	if err != nil {
-		return newTestErrorf("terraform destroy failed after %d attempts: %v", r.Max, err)
+		return testerror.Newf("terraform destroy failed after %d attempts: %v", r.Max, err)
 	}
 	return nil
 }

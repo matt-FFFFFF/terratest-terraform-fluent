@@ -25,7 +25,7 @@ func TestHasValueStrings(t *testing.T) {
 	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
 	require.NoError(t, err)
 	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("local_file.test").Key("content").HasValue("test").IfNotFail(t)
+	InPlan(tftest.Plan).That("local_file.test").Key("content").HasValue("test").ErrorIsNil(t)
 }
 
 func TestHasValueStringsNotEqualError(t *testing.T) {
@@ -71,7 +71,7 @@ func TestKeyNotExists(t *testing.T) {
 	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
 	defer tftest.Cleanup()
 	require.NoError(t, err)
-	InPlan(tftest.Plan).That("local_file.test").Key("not_exists").DoesNotExist().IfNotFail(t)
+	InPlan(tftest.Plan).That("local_file.test").Key("not_exists").DoesNotExist().ErrorIsNil(t)
 }
 
 func TestInSubdir(t *testing.T) {
@@ -80,7 +80,7 @@ func TestInSubdir(t *testing.T) {
 	tftest, err := setuptest.Dirs("testdata/test-in-subdir", "subdir").WithVars(nil).InitPlanShow(t)
 	require.NoError(t, err)
 	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("module.test.local_file.test").Key("content").HasValue("test").IfNotFail(t)
+	InPlan(tftest.Plan).That("module.test.local_file.test").Key("content").HasValue("test").ErrorIsNil(t)
 }
 
 func TestJsonArrayAssertionFunc(t *testing.T) {
@@ -104,7 +104,7 @@ func TestJsonArrayAssertionFunc(t *testing.T) {
 	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
 	require.NoError(t, err)
 	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("local_file.test_array_json").Key("content").ContainsJsonValue(JsonAssertionFunc(f)).IfNotFail(t)
+	InPlan(tftest.Plan).That("local_file.test_array_json").Key("content").ContainsJsonValue(JsonAssertionFunc(f)).ErrorIsNil(t)
 }
 
 func TestJsonSimpleAssertionFunc(t *testing.T) {
@@ -129,5 +129,5 @@ func TestJsonSimpleAssertionFunc(t *testing.T) {
 	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
 	require.NoError(t, err)
 	defer tftest.Cleanup()
-	InPlan(tftest.Plan).That("local_file.test_simple_json").Key("content").ContainsJsonValue(f).IfNotFail(t)
+	InPlan(tftest.Plan).That("local_file.test_simple_json").Key("content").ContainsJsonValue(f).ErrorIsNil(t)
 }
