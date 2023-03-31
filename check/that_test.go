@@ -3,6 +3,7 @@ package check
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/matt-FFFFFF/terratest-terraform-fluent/setuptest"
@@ -65,6 +66,30 @@ func TestKeyNotExistsError(t *testing.T) {
 	)
 }
 
+func TestResourceExists(t *testing.T) {
+	t.Parallel()
+
+	tftest, _ := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	defer tftest.Cleanup()
+	assert.NoErrorf(
+		t,
+		InPlan(tftest.Plan).That("local_file.test").Exists().AsError(),
+		"resource local_file.test not found in plan",
+	)
+}
+
+func TestResourceExistsFail(t *testing.T) {
+	t.Parallel()
+
+	tftest, _ := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	defer tftest.Cleanup()
+	assert.Errorf(
+		t,
+		InPlan(tftest.Plan).That("not_exists").Exists(),
+		"resource not_exists found in plan",
+	)
+}
+
 func TestKeyNotExists(t *testing.T) {
 	t.Parallel()
 
@@ -74,6 +99,15 @@ func TestKeyNotExists(t *testing.T) {
 	InPlan(tftest.Plan).That("local_file.test").Key("not_exists").DoesNotExist().ErrorIsNil(t)
 }
 
+func TestKeyNotExistsFail(t *testing.T) {
+	t.Parallel()
+
+	tftest, err := setuptest.Dirs(basicTestData, "").WithVars(nil).InitPlanShow(t)
+	defer tftest.Cleanup()
+	require.NoError(t, err)
+	require.Errorf(t, InPlan(tftest.Plan).That("local_file.test").Key("content").DoesNotExist(), "key content not found in resource when it should be")
+}
+
 func TestInSubdir(t *testing.T) {
 	t.Parallel()
 
@@ -81,6 +115,13 @@ func TestInSubdir(t *testing.T) {
 	require.NoError(t, err)
 	defer tftest.Cleanup()
 	InPlan(tftest.Plan).That("module.test.local_file.test").Key("content").HasValue("test").ErrorIsNil(t)
+}
+
+func TestInSubdirFail(t *testing.T) {
+	t.Parallel()
+
+	_, err := setuptest.Dirs("testdata/test-in-subdir", "not_exist").WithVars(nil).InitPlanShow(t)
+	require.True(t, os.IsNotExist(err))
 }
 
 func TestJsonArrayAssertionFunc(t *testing.T) {
