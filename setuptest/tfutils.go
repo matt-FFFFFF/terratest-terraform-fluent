@@ -23,6 +23,7 @@ func getDefaultTerraformOptions(t *testing.T, dir string) *terraform.Options {
 		PlanFilePath: "tfplan",
 		TerraformDir: dir,
 		Lock:         true,
+		NoColor:      true,
 
 		Vars: make(map[string]interface{}),
 	}

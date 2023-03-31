@@ -1,11 +1,31 @@
 terraform {
   required_version = ">= 1.4.0"
+  required_providers {
+    local = {
+      source = "hashicorp/local"
+      version = ">= 2.4.0"
+    }
+  }
 }
 
-locals {
-  now = timestamp()
+resource "local_file" "test" {
+  content = "test"
+  filename = "test.txt"
+  file_permission = "0644"
 }
 
 resource "terraform_data" "test" {
-  input = local.now
+  lifecycle {
+    replace_triggered_by = [
+      local_file.test
+    ]
+
+  }
+  provisioner "local-exec" {
+    command = "rm -f test.txt"
+    when = create
+  }
+  depends_on = [
+    local_file.test,
+  ]
 }

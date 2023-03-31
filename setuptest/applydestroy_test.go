@@ -33,12 +33,14 @@ func TestApplyIdempotentRetryFail(t *testing.T) {
 	t.Parallel()
 
 	rty := Retry{
-		Max:  3,
-		Wait: time.Second * 20,
+		Max:  2,
+		Wait: time.Second * 10,
 	}
 	test, err := Dirs("testdata/applyidempotentretryfail", "").WithVars(nil).InitPlanShow(t)
 	require.NoError(t, err)
-	defer test.Destroy(t).ErrorIsNil(t)
+	defer test.Destroy(t)
+	tb := time.Now()
 	err = test.ApplyIdempotentRetry(t, rty).AsError()
-	assert.ErrorContains(t, err, "not idempotent")
+	assert.Truef(t, time.Since(tb) > 20*time.Second, "retry should have waited at least 20 second")
+	assert.ErrorContains(t, err, "terraform configuration not idempotent")
 }
